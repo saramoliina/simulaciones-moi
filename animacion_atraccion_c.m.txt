@@ -1,0 +1,47 @@
+%% Script 2: Animación 3D de la Atracción (Apartado C)
+clear; clc; close all;
+
+m = 1.0; 
+g = 9.81; 
+a = 0.5;
+r_0 = 1.2; 
+r_dot_0 = 0.0; 
+omega_0 = 3.5;
+L_z = m * (r_0^2) * omega_0; 
+tspan = [0 12]; 
+y0 = [r_0; r_dot_0];
+
+[t, y] = ode45(@(t,y) ode_parabola_rotatoria(t, y, m, g, a, L_z), tspan, y0);
+r_sol = y(:,1);
+theta_sol = (L_z / (m * r_0^2)) * t; 
+
+X_part = r_sol .* cos(theta_sol);
+Y_part = r_sol .* sin(theta_sol);
+Z_part = a * r_sol.^2;
+
+figure('Name', 'Simulación 3D de la Atracción', 'Position', [150, 150, 800, 650], 'Color', 'white');
+
+[R_grid, TH_grid] = meshgrid(linspace(0, 2, 50), linspace(0, 2*pi, 50));
+Z_grid = a * R_grid.^2;
+X_grid = R_grid .* cos(TH_grid);
+Y_grid = R_grid .* sin(TH_grid);
+
+surf(X_grid, Y_grid, Z_grid, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
+colormap(copper); hold on; axis equal; grid on;
+xlabel('X (m)'); ylabel('Y (m)'); zlabel('Z (m)');
+title('Simulación 3D: Dinámica del Vehículo');
+view(45, 30);
+
+h_trail = plot3(X_part(1), Y_part(1), Z_part(1), 'b-', 'LineWidth', 1.5);
+h_part  = plot3(X_part(1), Y_part(1), Z_part(1), 'ro', 'MarkerSize', 9, 'MarkerFaceColor', 'r');
+legend('Superficie de la Atracción', 'Estela', 'Vehículo', 'Location', 'northeast');
+
+fprintf('Iniciando animación fluida...\n');
+for k = 1:2:length(t)
+    if ~ishghandle(h_part), break; end
+    set(h_part, 'XData', X_part(k), 'YData', Y_part(k), 'ZData', Z_part(k));
+    set(h_trail, 'XData', X_part(1:k), 'YData', Y_part(1:k), 'ZData', Z_part(1:k));
+    drawnow;
+    pause(0.02); % Cambia esto a 0.04 si quieres que vaya más lento, o 0.01 si más rápido
+end
+fprintf('¡Animación finalizada!\n');

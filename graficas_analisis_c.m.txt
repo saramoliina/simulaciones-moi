@@ -1,0 +1,66 @@
+%% Script 1: Gráficas de Análisis y Estudio Sistemático (Apartado C)
+clear; clc; close all;
+
+m = 1.0; 
+g = 9.81; 
+a_base = 0.5;
+r_0_base = 1.0; 
+r_dot_0 = 0.0; 
+omega_0_base = 3.0;
+tspan = [0 12]; 
+
+% Ventana principal con las 4 subgráficas
+figure('Name', 'Análisis Dinámico - Apartado C', 'Position', [100, 100, 1100, 650]);
+
+% 1. Evolución temporal base
+L_z_base = m * (r_0_base^2) * omega_0_base;
+[t_base, y_base] = ode45(@(t,y) ode_parabola_rotatoria(t, y, m, g, a_base, L_z_base), tspan, [r_0_base; r_dot_0]);
+
+subplot(2,2,1);
+plot(t_base, y_base(:,1), 'LineWidth', 1.8, 'Color', 'b');
+xlabel('Tiempo (s)'); ylabel('Radio r(t) (m)');
+title('Evolución de la posición radial'); grid on;
+
+% 2. Espacio de Fases: Variando las condiciones iniciales r_0 (Criterio 6)
+subplot(2,2,2); hold on;
+r0_values = [0.8, 1.0, 1.2];
+colores_fase = {'r', 'g', 'm'};
+for i = 1:length(r0_values)
+    L_zi = m * (r0_values(i)^2) * omega_0_base;
+    [~, yi] = ode45(@(t,y) ode_parabola_rotatoria(t, y, m, g, a_base, L_zi), tspan, [r0_values(i); r_dot_0]);
+    plot(yi(:,1), yi(:,2), 'Color', colores_fase{i}, 'LineWidth', 1.5, ...
+         'DisplayName', ['r_0 = ' num2str(r0_values(i)) ' m']);
+end
+xlabel('Radio r (m)'); ylabel('Velocidad \dot{r} (m/s)');
+title('Espacio de Fases (Variando r_0)');
+legend('Location', 'best'); grid on; hold off;
+
+% 3. Estudio de Parámetro: Variación de la curvatura 'a' (Criterio 7)
+subplot(2,2,3); hold on;
+a_values = [0.3, 0.5, 0.8];
+colores_a = {'b', [0 0.5 0], 'k'};
+for i = 1:length(a_values)
+    ai = a_values(i);
+    L_zi = m * (r_0_base^2) * omega_0_base;
+    [t_a, yi] = ode45(@(t,y) ode_parabola_rotatoria(t, y, m, g, ai, L_zi), tspan, [r_0_base; r_dot_0]);
+    plot(t_a, yi(:,1), 'Color', colores_a{i}, 'LineWidth', 1.5, ...
+         'DisplayName', ['a = ' num2str(ai)]);
+end
+xlabel('Tiempo (s)'); ylabel('Radio r(t) (m)');
+title('Estudio Paramétrico: Variación de curvatura (a)');
+legend('Location', 'best'); grid on; hold off;
+
+% 4. Estudio de Parámetro: Variación de la velocidad angular \omega_0 (Criterio 7)
+subplot(2,2,4); hold on;
+omega_values = [2.0, 3.5, 5.0]; 
+colores_om = {'c', 'r', [0.8 0.5 0]};
+for i = 1:length(omega_values)
+    omega_i = omega_values(i);
+    L_zi = m * (r_0_base^2) * omega_i;
+    [t_om, yi] = ode45(@(t,y) ode_parabola_rotatoria(t, y, m, g, a_base, L_zi), tspan, [r_0_base; r_dot_0]);
+    plot(t_om, yi(:,1), 'LineWidth', 1.6, 'Color', colores_om{i}, ...
+         'DisplayName', ['\omega_0 = ' num2str(omega_i) ' rad/s']);
+end
+xlabel('Tiempo (s)'); ylabel('Radio r(t) (m)');
+title('Estudio Paramétrico: Variación de \omega_0');
+legend('Location', 'best'); grid on; hold off;

@@ -1,0 +1,17 @@
+function dydt = ode_parabola_rotatoria(t, y, m, g, a, L_z)
+    % y(1) = r (posición radial)
+    % y(2) = r_punto (velocidad radial)
+    
+    r = y(1);
+    r_punto = y(2);
+    
+    if r < 1e-3
+        r = 1e-3;
+    end
+    
+    numerador = (L_z^2 / (m^2 * r^3)) - (2 * g * a * r) - (4 * a^2 * r * r_punto^2);
+    denominador = 1 + 4 * a^2 * r^2;
+    
+    r_dos_puntos = numerador / denominador;
+    dydt = [r_punto; r_dos_puntos];
+end
